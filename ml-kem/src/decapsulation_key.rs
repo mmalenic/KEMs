@@ -101,10 +101,14 @@ where
         Ok(Self::generate_deterministic(d, z))
     }
 
+    /// Create a [`DecapsulationKey`] deterministically from seed values `d` and `z`.
+    ///
+    /// This allows only storing the seed and recomputing the key, avoiding the extra memory cost of
+    /// the full decapsulation key.
     #[inline]
     #[must_use]
     #[allow(clippy::similar_names)] // allow dk_pke, ek_pke, following the spec
-    pub(crate) fn generate_deterministic(d: B32, z: B32) -> Self {
+    pub fn generate_deterministic(d: B32, z: B32) -> Self {
         let (dk_pke, ek_pke) = DecryptionKey::generate(&d);
         let ek = EncapsulationKey::from_encryption_key(ek_pke);
         let d = Some(d);
