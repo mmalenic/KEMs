@@ -101,10 +101,14 @@ where
         Ok(Self::generate_deterministic(d, z))
     }
 
-    /// Create a [`DecapsulationKey`] deterministically from seed values `d` and `z`.
+    /// Create a [`DecapsulationKey`] deterministically from the given seed values `d` and `z`.
     ///
-    /// This allows only storing the seed and recomputing the key, avoiding the extra memory cost of
-    /// the full decapsulation key.
+    /// This allows only storing the seed value and re-computing the key, avoiding the memory
+    /// cost of the full expanded key.
+    ///
+    /// # Warning
+    /// Both `d` and `z` **must** be uniformly random and come from a cryptographically secure
+    /// random source. Reusing or predicting either value compromises the security of the key.
     #[inline]
     #[must_use]
     #[allow(clippy::similar_names)] // allow dk_pke, ek_pke, following the spec
@@ -113,6 +117,21 @@ where
         let ek = EncapsulationKey::from_encryption_key(ek_pke);
         let d = Some(d);
         Self { dk_pke, ek, d, z }
+    }
+
+    /// Derive only the [`EncapsulationKey`] from the given seed value `d`.
+    ///
+    /// This allows only storing the seed value and re-computing the key, avoiding the memory
+    /// cost of the full expanded key.
+    ///
+    /// # Warning
+    /// `d` **must** be uniformly random and come from a cryptographically secure
+    /// random source. Reusing or predicting either value compromises the security of the key.
+    #[inline]
+    #[must_use]
+    pub fn encapsulation_key_from_seed(d: &B32) -> EncapsulationKey<P> {
+        let (_dk_pke, ek_pke) = DecryptionKey::generate(d);
+        EncapsulationKey::from_encryption_key(ek_pke)
     }
 }
 
